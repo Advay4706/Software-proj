@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCart - Smart Shopping Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Login/Signup Screen -->
+    <div id="auth-container" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>🛒 SmartCart</h1>
+                <p>Smart Shopping Management System</p>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form active">
+                <h2>Welcome Back!</h2>
+                <form onsubmit="login(event)">
+                    <div class="input-group">
+                        <input type="email" id="login-email" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="login-password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="auth-btn">Login</button>
+                </form>
+                <p class="auth-switch">
+                    Don't have an account?
+                    <a href="#" onclick="showSignup()">Sign up here</a>
+                </p>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-form" class="auth-form">
+                <h2>Create Account</h2>
+                <form onsubmit="signup(event)">
+                    <div class="input-group">
+                        <input type="text" id="signup-name" placeholder="Full Name" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="signup-email" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signup-password" placeholder="Password" required minlength="6">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signup-confirm" placeholder="Confirm Password" required
+                            minlength="6">
+                    </div>
+                    <button type="submit" class="auth-btn">Create Account</button>
+                </form>
+                <p class="auth-switch">
+                    Already have an account?
+                    <a href="#" onclick="showLogin()">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="main-container" class="container" style="display: none;">
+        <header>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>🛒 SmartCart</h1>
+                    <p>Smart Shopping Management System</p>
+                </div>
+                <div class="header-right">
+                    <span class="user-welcome">Welcome, <span id="user-name">User</span>!</span>
+                    <button onclick="logout()" class="logout-btn">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="tab-btn" onclick="showTab('shopping-list')">Shopping List</button>
+            <button class="tab-btn" onclick="showTab('family')">Family</button>
+            <button class="tab-btn" onclick="showTab('offers')">Offers</button>
+            <button class="tab-btn" onclick="showTab('profile')">Profile</button>
+            <button class="tab-btn" onclick="showTab('analytics')">Analytics</button>
+        </nav>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>🛒 Quick Add</h3>
+                    <div class="quick-add-form">
+                        <input type="text" id="quick-item" placeholder="Quick add item..." oninput="quickSearch()">
+                        <button onclick="quickAddItem()" id="quick-add-btn" disabled>Add</button>
+                        <button onclick="startVoiceInput()" class="voice-btn">🎤 Voice</button>
+                    </div>
+                    <div id="quick-suggestions" class="quick-suggestions"></div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>📋 Current List Preview</h3>
+                    <div id="dashboard-list-preview" class="list-preview">
+                        <p>Your shopping list is empty</p>
+                    </div>
+                    <button onclick="showTab('shopping-list')" class="view-full-btn">View Full List</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>⏰ Upcoming Reminders</h3>
+                    <div id="dashboard-reminders" class="reminders-preview"></div>
+                    <button onclick="showTab('reminders')" class="view-full-btn">Manage Reminders</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>🎉 Active Offers</h3>
+                    <div id="dashboard-offers" class="offers-preview"></div>
+                    <button onclick="showTab('offers')" class="view-full-btn">View All Offers</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>💰 Budget Overview</h3>
+                    <div class="budget-overview">
+                        <div class="budget-item">
+                            <span>Monthly Budget:</span>
+                            <span id="monthly-budget">₹5000</span>
+                        </div>
+                        <div class="budget-item">
+                            <span>Spent This Month:</span>
+                            <span id="monthly-spent-dash">₹0</span>
+                        </div>
+                        <div class="budget-progress">
+                            <div class="progress-bar">
+                                <div id="budget-progress-fill" class="progress-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>📊 Quick Stats</h3>
+                    <div class="quick-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-items-dash">0</span>
+                            <span class="stat-label">Items in List</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-orders-dash">0</span>
+                            <span class="stat-label">Total Orders</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping List Tab -->
+        <div id="shopping-list" class="tab-content">
+            <div class="add-item-section">
+                <h3>Add New Item</h3>
+                <div class="form-group">
+                    <input type="text" id="item-name" placeholder="Start typing item name..." required
+                        oninput="searchItems()">
+                    <select id="item-category">
+                        <option value="groceries">Groceries</option>
+                        <option value="dairy">Dairy</option>
+                        <option value="meat">Meat & Fish</option>
+                        <option value="vegetables">Vegetables</option>
+                        <option value="fruits">Fruits</option>
+                        <option value="household">Household</option>
+                        <option value="personal">Personal Care</option>
+                    </select>
+                    <input type="number" id="item-quantity" placeholder="Qty" min="1" value="1">
+                    <input type="number" id="item-price" placeholder="Price (₹)" step="0.01" min="0" readonly>
+                    <button onclick="addItem()">Add Item</button>
+                    <button onclick="startVoiceInput()" class="voice-btn">🎤 Voice Add</button>
+                </div>
+
+                <!-- OCR Bill Reader -->
+                <div class="ocr-section">
+                    <h4>📄 Upload Bill for OCR</h4>
+                    <input type="file" id="bill-upload" accept="image/*,.pdf" onchange="processBill()">
+                    <div id="ocr-results" class="ocr-results"></div>
+                </div>
+                <div id="search-suggestions" class="search-suggestions"></div>
+
+                <!-- Active Offers Display -->
+                <div id="active-offers" class="active-offers"></div>
+
+                <!-- Frequently Bought Items -->
+                <div class="frequent-items">
+                    <h4>🔥 Your Frequently Bought Items</h4>
+                    <div id="frequent-items-list" class="frequent-items-grid"></div>
+                </div>
+            </div>
+
+            <div class="shopping-lists">
+                <div class="list-section">
+                    <h3>Current Shopping List</h3>
+                    <div class="list-stats">
+                        <span>Total Items: <span id="total-items">0</span></span>
+                        <span>Estimated Cost: ₹<span id="total-cost">0.00</span></span>
+                    </div>
+                    <ul id="current-list" class="item-list"></ul>
+                    <div class="list-actions">
+                        <button onclick="clearBoughtItems()" class="action-btn">Clear Bought Items</button>
+                        <button onclick="exportShoppingList()" class="action-btn">Export List</button>
+                        <button onclick="clearList()" class="clear-btn">Clear All</button>
+                    </div>
+                </div>
+
+                <div class="suggestions-section">
+                    <h3>Smart Suggestions</h3>
+                    <div id="suggestions" class="suggestions-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Family Tab -->
+        <div id="family" class="tab-content">
+            <h3>👨‍👩‍👧‍👦 Family Group Collaboration</h3>
+            <div class="family-grid">
+                <div class="family-card">
+                    <h4>Your Family Code</h4>
+                    <div class="family-code-display">
+                        <span id="family-code">SMART-<span id="user-family-code">1234</span></span>
+                        <button onclick="generateFamilyCode()" class="code-btn">Generate New</button>
+                    </div>
+                    <p>Share this code with family members to collaborate on shopping lists</p>
+                </div>
+
+                <div class="family-card">
+                    <h4>Join Family Group</h4>
+                    <div class="join-family-form">
+                        <input type="text" id="join-family-code" placeholder="Enter family code">
+                        <button onclick="joinFamilyGroup()" class="join-btn">Join Group</button>
+                    </div>
+                </div>
+
+                <div class="family-card">
+                    <h4>Family Members</h4>
+                    <div id="family-members-list" class="members-list">
+                        <div class="member-item">
+                            <span class="member-name">You</span>
+                            <span class="member-role">Owner</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="family-card">
+                    <h4>Shared Reminders</h4>
+                    <div class="shared-reminders-form">
+                        <input type="text" id="shared-reminder-text" placeholder="Add shared reminder">
+                        <button onclick="addSharedReminder()" class="reminder-btn">Add</button>
+                    </div>
+                    <div id="shared-reminders-list" class="shared-reminders"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Offers Tab -->
+        <div id="offers" class="tab-content">
+            <h3>🎉 Special Offers & Deals</h3>
+
+            <!-- Store Selection -->
+            <div class="store-selection">
+                <h4>Select Your Preferred Store</h4>
+                <select id="preferred-store" onchange="updateStoreOffers()">
+                    <option value="local-mart">Local Mart</option>
+                    <option value="city-grocers">City Grocers</option>
+                    <option value="fresh-market">Fresh Market</option>
+                    <option value="super-bazaar">Super Bazaar</option>
+                </select>
+            </div>
+
+            <!-- Loyalty Program -->
+            <div class="loyalty-section">
+                <h4>💳 Loyalty Program</h4>
+                <div class="loyalty-form">
+                    <input type="text" id="loyalty-card" placeholder="Enter loyalty card number">
+                    <button onclick="saveLoyaltyCard()" class="loyalty-btn">Save Card</button>
+                </div>
+                <div id="loyalty-status" class="loyalty-status"></div>
+            </div>
+
+            <div class="offers-grid" id="offers-container">
+                <div class="offer-card" data-offer="dairy10" onclick="activateOffer('dairy10')">
+                    <div class="offer-badge">10% OFF</div>
+                    <h4>Dairy Products</h4>
+                    <p>Get 10% off on all dairy products</p>
+                    <small>Min purchase: ₹200</small>
+                    <div class="offer-actions">
+                        <button class="save-offer-btn">Save Offer</button>
+                    </div>
+                </div>
+                <div class="offer-card" data-offer="bulk500" onclick="activateOffer('bulk500')">
+                    <div class="offer-badge">₹500 OFF</div>
+                    <h4>Bulk Shopping</h4>
+                    <p>₹500 off on orders above ₹5000</p>
+                    <small>Valid on all categories</small>
+                    <div class="offer-actions">
+                        <button class="save-offer-btn">Save Offer</button>
+                    </div>
+                </div>
+                <div class="offer-card" data-offer="vegetables15" onclick="activateOffer('vegetables15')">
+                    <div class="offer-badge">15% OFF</div>
+                    <h4>Fresh Vegetables</h4>
+                    <p>15% off on fresh vegetables</p>
+                    <small>Min purchase: ₹300</small>
+                    <div class="offer-actions">
+                        <button class="save-offer-btn">Save Offer</button>
+                    </div>
+                </div>
+                <div class="offer-card" data-offer="fruits20" onclick="activateOffer('fruits20')">
+                    <div class="offer-badge">20% OFF</div>
+                    <h4>Seasonal Fruits</h4>
+                    <p>20% off on seasonal fruits</p>
+                    <small>Weekend special</small>
+                    <div class="offer-actions">
+                        <button class="save-offer-btn">Save Offer</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saved Offers -->
+            <div class="saved-offers-section">
+                <h4>💾 Your Saved Offers</h4>
+                <div id="saved-offers-list" class="saved-offers"></div>
+            </div>
+        </div>
+
+
+
+        <!-- Profile Tab -->
+        <div id="profile" class="tab-content">
+            <h3>👤 My Profile</h3>
+            <div class="profile-grid">
+                <div class="profile-info">
+                    <h4>Account Information</h4>
+                    <div class="info-item editable">
+                        <label>Name:</label>
+                        <span id="profile-name" onclick="editField('name')">User Name</span>
+                        <button class="edit-btn" onclick="editField('name')">✏️</button>
+                    </div>
+                    <div class="info-item">
+                        <label>Email:</label>
+                        <span id="profile-email">user@example.com</span>
+                    </div>
+                    <div class="info-item editable">
+                        <label>Monthly Budget:</label>
+                        <span id="profile-budget" onclick="editField('budget')">₹5000</span>
+                        <button class="edit-btn" onclick="editField('budget')">✏️</button>
+                    </div>
+                    <div class="info-item editable">
+                        <label>Allergies:</label>
+                        <span id="profile-allergies" onclick="editField('allergies')">None</span>
+                        <button class="edit-btn" onclick="editField('allergies')">✏️</button>
+                    </div>
+                    <div class="info-item editable">
+                        <label>Preferred Store:</label>
+                        <span id="profile-store" onclick="editField('store')">Local Mart</span>
+                        <button class="edit-btn" onclick="editField('store')">✏️</button>
+                    </div>
+                    <div class="info-item">
+                        <label>Member Since:</label>
+                        <span id="profile-since">January 2024</span>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <h4>Account Actions</h4>
+                    <button onclick="showChangePassword()" class="profile-btn">Change Password</button>
+                    <button onclick="exportData()" class="profile-btn">Export Data</button>
+                    <button onclick="showReminders()" class="profile-btn">Manage Reminders</button>
+                    <button onclick="deleteAccount()" class="profile-btn danger">Delete Account</button>
+                </div>
+
+                <!-- Reminders Section -->
+                <div class="reminders-section">
+                    <h4>⏰ Your Reminders</h4>
+                    <div class="reminder-form">
+                        <input type="text" id="reminder-text" placeholder="Reminder text">
+                        <select id="reminder-type">
+                            <option value="time">Time-based</option>
+                            <option value="location">Location-based</option>
+                        </select>
+                        <input type="datetime-local" id="reminder-time">
+                        <button onclick="addReminder()" class="reminder-btn">Add</button>
+                    </div>
+                    <div id="reminders-list" class="reminders-list"></div>
+                </div>
+
+                <div class="profile-stats">
+                    <h4>Shopping Statistics</h4>
+                    <div class="stat-item">
+                        <span class="stat-label">Favorite Category:</span>
+                        <span id="favorite-category">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Average Order Value:</span>
+                        <span id="avg-order-value">₹0.00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Most Bought Item:</span>
+                        <span id="most-bought-item">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <h3>Spending Analytics</h3>
+            <div class="analytics-grid">
+                <div class="stat-card">
+                    <h4>Total Spent This Month</h4>
+                    <p class="stat-value">₹<span id="monthly-spent">0.00</span></p>
+                </div>
+                <div class="stat-card">
+                    <h4>Average Per Shopping</h4>
+                    <p class="stat-value">₹<span id="avg-shopping">0.00</span></p>
+                </div>
+                <div class="stat-card">
+                    <h4>Most Bought Category</h4>
+                    <p class="stat-value" id="top-category">-</p>
+                </div>
+            </div>
+
+            <div class="category-breakdown">
+                <h4>Category Breakdown</h4>
+                <div id="category-chart"></div>
+            </div>
+
+            <!-- Budget Alerts -->
+            <div class="budget-alerts">
+                <h4>💰 Budget Alerts</h4>
+                <div id="budget-alert-container" class="alert-container"></div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div id="edit-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="edit-modal-title">Edit Field</h3>
+                    <span class="close" onclick="closeEditModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="edit-field-input" placeholder="Enter new value">
+                    <div class="modal-actions">
+                        <button onclick="saveFieldEdit()" class="save-btn">Save</button>
+                        <button onclick="closeEditModal()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
